@@ -5,7 +5,7 @@ module.exports = {
 		const embed = new MessageEmbed()
 			.setColor('#742f67')
 			.setTimestamp()
-			.setFooter('Fallen Atomic Bot', 'https://cdn.discordapp.com/app-icons/426554007977197579/3fd22dff0bf6f9b65dfe945cc25ee24b.png');
+			.setFooter('Player2', 'https://cdn.discordapp.com/app-icons/426554007977197579/3fd22dff0bf6f9b65dfe945cc25ee24b.png');
 		if (typeof type === 'string') {
 			switch (type.toUpperCase()) {
 				case 'ATTENTION':
