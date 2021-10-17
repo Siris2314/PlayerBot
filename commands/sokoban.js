@@ -222,7 +222,9 @@ class SimulationGrid {
 			this.move(steps[idx].from, steps[idx].to);
 	}
 	
-	tryPushGetMoveSteps(position, direction, steps) {
+	tryPushGetMoveSteps(position, direction, steps, pushLimit = 1) {
+		if (pushLimit === 0)
+			return false;
 		const futurePos = position.add(direction);
 		if (!this.bounds(position) || !this.bounds(futurePos) || this.get(position) !== BlockEnum.BOX)
 			return false;
@@ -237,7 +239,7 @@ class SimulationGrid {
 				});
 				return true;
 			case BlockEnum.BOX:
-				if (this.tryPushGetMoveSteps(futurePos, direction, steps)) {
+				if (this.tryPushGetMoveSteps(futurePos, direction, steps, pushLimit - 1)) {
 					steps.push({
 						from: position,
 						to: futurePos,
@@ -282,6 +284,7 @@ class SokobanBoard {
 		this.moveCount = 0;
 		this.stopAfterWin = true;
 		this.won = false;
+		this.pushLimit = 1;
 	}
 
 	get size() {
