@@ -152,13 +152,13 @@ class Lobby {
 }
 
 module.exports = {
-	async makeLobby(interaction, lobbyName, maxPlayers, minPlayers, duration, successfulCallback) {
+	async makeLobby(interaction, lobbyName, minPlayers, maxPlayers, duration, successfulCallback) {
 		if (typeof playerToLobby.get(interaction.user.id) !== 'undefined') {
 			await replyAlreadyInLobby(interaction);
 			return;
 		}
 		
-		const newActiveLobby = new Lobby(interaction, lobbyName, maxPlayers, minPlayers, duration, successfulCallback);
+		const newActiveLobby = new Lobby(interaction, lobbyName, minPlayers, maxPlayers, duration, successfulCallback);
 		activeLobbies.push(newActiveLobby);
 	}
 }
