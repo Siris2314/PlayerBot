@@ -12,11 +12,13 @@
     "@discordjs/builders": "^0.6.0",
     "@discordjs/opus": "^0.5.3",
     "@discordjs/rest": "^0.1.0-canary.0",
+    "axios": "^0.23.0",
     "discord-api-types": "^0.23.1",
-    "discord.js": "^13.3.0-dev.1634169894.c44ea50",
+    "discord.js": "^13.2.0",
     "dotenv": "^10.0.0",
     "ffmpeg": "^0.0.4",
-    "fluent-ffmpeg": "^2.1.2"
+    "fluent-ffmpeg": "^2.1.2",
+    "moment": "^2.29.1"
   },
   "devDependencies": {
     "eslint": "^8.0.1"

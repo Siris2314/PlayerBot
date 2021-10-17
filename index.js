@@ -1,4 +1,4 @@
-const { Client, Collection, Intents } = require('discord.js');
+const { Client, Collection, Intents} = require('discord.js');
 const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9');
 
@@ -8,8 +8,14 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const components = new Collection();
-const client = new Client({ 
-	intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] 
+const client = new Client({
+    partials: ["CHANNEL", "MESSAGE", "GUILD_MEMBER", "REACTION"],
+    intents:32767,
+    allowedMentions: {
+        parse: ['users', 'roles'],
+        repliedUser: false
+    },  
+    restTimeOffset: 0
 });
 
 // Setup event listeners
