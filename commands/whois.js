@@ -70,14 +70,15 @@ module.exports = {
         if(member.user.flags !== null)
             userflags = member.user.flags.toArray();
         
-        const devices = member.presence?.clientStatus  || {};
-        const deviceEntries = Object.entries(devices)
+        const deviceEntries = Object.entries(member.presence?.clientStatus || {});
+        const deviceEntriesText = Object.entries(deviceEntries)
             .map((value,index) => `${index + 1}) ${value[0][0].toUpperCase()}${value[0].slice(1)}`)
             .join("\n");
         const activeGames = member.presence.activities.filter(x=>x.type === "PLAYING");
-        const embeduserinfo = defaultEmbed()
+
+        const userInfoEmbed = defaultEmbed()
             .setThumbnail(member.user.displayAvatarURL({dynamic: true, size:512}))
-            .setAuthor("Info On " + member.user.username + "#" + member.user.discriminator, member.user.displayAvatarURL({dynamic: true}))
+            .setAuthor("Information about " + member.user.username + "#" + member.user.discriminator, member.user.displayAvatarURL({dynamic: true}))
             .addField('**Username:**', `${member.user.username}#${member.user.discriminator}`,true)
             .addField('**ID:**',`${member.id}`,true)
             .addField('**Avatar:**',`[Link to avatar](${member.user.displayAvatarURL({dynamic: true})})`,true)
@@ -85,16 +86,22 @@ module.exports = {
             .addField('**Date Joined Server:**',`${moment(member.joinedAt).format('LL LTS')}`,true)
             .addField('**Flags:**',`${userflags.length > 0 ? userflags.map(flag => flags[flag]).join(', ') : 'None'}`, true)
             .addField('**Status:**',`${status[member.presence] ? status[member.presence.status] : 'Offline'}`,true)
-            .addField('Devices Currently Using: ',`${Object.entries(devices).length}`)
-            .addField('Currently On Device(s)', `${Object.entries(devices).length > 0 ? deviceEntries : 'None'}`)
+            .addField('Devices Currently Using: ',`${deviceEntries.length}`)
+            .addField('Currently On Device(s)', `${deviceEntries.length > 0 ? deviceEntriesText : 'None'}`)
             .addField('**Game**:',`${activeGames.length > 0 ? activeGames[0].name : 'Not playing any games.'}`,true)
             .addField('**Highest Role:**',`${member.roles.highest.id === interaction.guild.id ? 'None' : member.roles.highest}`,true)
             .addField(`${roles.length} **Roles:**`,`${getRoles(roles)}`)
             .setTimestamp();
-
+        
+        let color = member.displayHexColor;
+        if (color === '#000000' && member.roles.hoist !== null)
+            color = member.roles.hoist.hexColor;
+        if (color !== '#000000')
+            userInfoEmbed.setColor(color);
+        
         if (user.banner)
-            embeduserinfo.setImage(user.banner);
+            userInfoEmbed.setImage(user.banner);
 
-        await interaction.reply({embeds:[embeduserinfo]});
+        await interaction.reply({embeds:[userInfoEmbed]});
     }
 }
