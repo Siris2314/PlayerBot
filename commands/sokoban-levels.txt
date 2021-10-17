@@ -1,26 +1,26 @@
-WWWWWWW
-W     W
-W PBG W
-W     W
-WWWWWWW
+#######
+#     #
+# @$. #
+#     #
+#######
 ---
 Teaching you the basics!
 
-WWWWW  
-W  PW  
-W WBWWW
-W B GGW
-WWWWWWW
+#####  
+#  @#  
+# #$###
+# $ ..#
+#######
 ---
 One tunnel, two boxes.
 
-WWWWWWW
-W  P GW
-W W WBW
-WG B  W
-WBW W W
-WGG B W
-WWWWWWW
+#######
+#  @ .#
+# # #$#
+#. $  #
+#$# # #
+#.. $ #
+#######
 ---
 Gridlock.
 

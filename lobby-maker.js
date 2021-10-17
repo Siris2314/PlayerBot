@@ -85,7 +85,7 @@ class Lobby {
 				.addField('Players', this.players.map((user, index) => `${index + 1}. <@${user.id}>`).join('\n'))
 				.addField('Count', `${this.players.length}/${this.maxPlayers}`, true)
 				.addField('Requires', `≥ ${this.minPlayers}`, true)
-				.addField((this.players.length >= this.minPlayers) ? 
+				.addField((this.players.length >= this.minPlayers && typeof this.successfulCallback !== 'undefined') ? 
 					'🟢 Starts in' : '‼️ Expires in', `${this.durationTimer / 1000} s`)
 			],
 			components: [
@@ -110,7 +110,7 @@ class Lobby {
 				this.addPlayer(interaction.user);
 				await interaction.reply({
 					embeds: [ defaultEmbed('SUCESSS')
-						.setDescription(`You have been added to the [lobby](${this.message.url}) for ${this.lobbyName}`)
+						.setDescription(`You have been added to the [lobby](${this.message.url}).`)
 					],
 					ephemeral: true,
 				})
@@ -122,7 +122,7 @@ class Lobby {
 				this.removePlayer(interaction.user);
 				await interaction.reply({
 					embeds: [ defaultEmbed('SUCESSS')
-						.setDescription(`You have been removed from the [lobby](${this.message.url}) for ${this.lobbyName}`)
+						.setDescription(`You have been removed from the [lobby](${this.message.url}).}`)
 					],
 					ephemeral: true,
 				})
@@ -140,7 +140,7 @@ class Lobby {
 	finishLobby() {
 		this.durationTimer = 0;
 		
-		if (this.players.length >= this.minPlayers)
+		if (this.players.length >= this.minPlayers && typeof this.successfulCallback !== 'undefined')
 			this.successfulCallback(this.players)
 
 		for (const i in this.players)
