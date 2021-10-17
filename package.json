@@ -18,7 +18,8 @@
     "dotenv": "^10.0.0",
     "ffmpeg": "^0.0.4",
     "fluent-ffmpeg": "^2.1.2",
-    "moment": "^2.29.1"
+    "moment": "^2.29.1",
+    "npm": "^8.1.0"
   },
   "devDependencies": {
     "eslint": "^8.0.1"
