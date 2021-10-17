@@ -122,7 +122,7 @@ class Lobby {
 				this.removePlayer(interaction.user);
 				await interaction.reply({
 					embeds: [ defaultEmbed('SUCESSS')
-						.setDescription(`You have been removed from the [lobby](${this.message.url}).}`)
+						.setDescription(`You have been removed from the [lobby](${this.message.url}).`)
 					],
 					ephemeral: true,
 				})
