@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const {MessageEmbed} = require('discord.js')
+const { MessageEmbed } = require('discord.js');
+const { defaultEmbed } = require('../constants');
 const axios = require('axios')
 const moment = require('moment');
 const dotenv = require('dotenv');
@@ -21,6 +22,7 @@ module.exports = {
             HYPESQUAD_EVENTS:'HypeSquad Events',
             HOUSE_BRAVERY: 'House of Bravery',
             HOUSE_BALANCE: 'House of Balance',
+            HOUSE_BRILLIANCE: 'House of Brilliance',
             EARLY_SUPPORTER: 'Early Supporter',
             TEAM_USER: 'Team User',
             SYSTEM: 'System',
@@ -55,109 +57,44 @@ module.exports = {
 
         let user = interaction.options.getUser('target');
 
-        console.log(user);
         if (!user) user = interaction.user;
         let member = await interaction.guild.members.fetch(user.id).catch(() => {});
-        console.log(member)
 
 
         const roles = member.roles.cache 
             .sort((a,b) => b.position - a.position)
             .map(role => role.toString())
-            .slice(0,-1)
-
+            .slice(0,-1);
         
-        const banner = user.banner;
-
-
-        if(banner){
-            
-
-
         let userflags = [];
-        if(member.user.flags === null){
-            userflags = [];
-        }
-        else{
+        if(member.user.flags !== null)
             userflags = member.user.flags.toArray();
-        }
-
         
-
-
         const devices = member.presence?.clientStatus  || {};
-
-        const entries = Object.entries(devices)
+        const deviceEntries = Object.entries(devices)
             .map((value,index) => `${index + 1}) ${value[0][0].toUpperCase()}${value[0].slice(1)}`)
             .join("\n");
-        
-        const embeduserinfo = new MessageEmbed()
+        const activeGames = member.presence.activities.filter(x=>x.type === "PLAYING");
+        const embeduserinfo = defaultEmbed()
             .setThumbnail(member.user.displayAvatarURL({dynamic: true, size:512}))
-            .setAuthor("Information about: " + member.user.username + "#" + member.user.discriminator, member.user.displayAvatarURL({dynamic: true}))
-            .setColor("RANDOM")
-            .addField('**Username:**', `\`${member.user.username}#${member.user.discriminator}\``,true)
-            .addField('**ID:**',`\`${member.id}\``,true)
-            .addField('**Avatar:**',`[\`Link to avatar\`](${member.user.displayAvatarURL({dynamic: true})})`,true)
-            .addField('**Registered Date:**',`\`${moment(member.user.createdTimestamp).format('LL')} ${moment(member.user.createdTimestamp).format('LT')}, ${moment(member.user.createdTimestamp).fromNow()} \``, true)
-            .addField('**Date Joined Server:**',`\`${moment(member.joinedAt).format('LL LTS')}\``,true)
-            .addField('**Flags:**',`\`${userflags.length ? userflags.map(flag => flags[flag]).join(', ') : 'None'}\``, true)
-            .addField('**Status:**',`\`${(member.presence !== null) ? (status[member.presence.status]) : 'Offline'}\``,true)
+            .setAuthor("Info On " + member.user.username + "#" + member.user.discriminator, member.user.displayAvatarURL({dynamic: true}))
+            .addField('**Username:**', `${member.user.username}#${member.user.discriminator}`,true)
+            .addField('**ID:**',`${member.id}`,true)
+            .addField('**Avatar:**',`[Link to avatar](${member.user.displayAvatarURL({dynamic: true})})`,true)
+            .addField('**Registered Date:**',`${moment(member.user.createdTimestamp).format('LL')} ${moment(member.user.createdTimestamp).format('LT')}, ${moment(member.user.createdTimestamp).fromNow()} `, true)
+            .addField('**Date Joined Server:**',`${moment(member.joinedAt).format('LL LTS')}`,true)
+            .addField('**Flags:**',`${userflags.length > 0 ? userflags.map(flag => flags[flag]).join(', ') : 'None'}`, true)
+            .addField('**Status:**',`${status[member.presence] ? status[member.presence.status] : 'Offline'}`,true)
             .addField('Devices Currently Using: ',`${Object.entries(devices).length}`)
-            .addField('Currently On Device', `\`${Object.entries(devices).length > 0 ? entries : 'None'}\``)
-            // .addField('**Game**:',`\`${member.presence.game || 'Not Currently Playing a Game.'}\``,true)
+            .addField('Currently On Device(s)', `${Object.entries(devices).length > 0 ? deviceEntries : 'None'}`)
+            .addField('**Game**:',`${activeGames.length > 0 ? activeGames[0].name : 'Not playing any games.'}`,true)
             .addField('**Highest Role:**',`${member.roles.highest.id === interaction.guild.id ? 'None' : member.roles.highest}`,true)
-            .addField(`\`${roles.length}\` **Roles:**`,`${getRoles(roles)}`)
-            .setColor("RANDOM")
-            .setImage(banner)
-            .setTimestamp()
+            .addField(`${roles.length} **Roles:**`,`${getRoles(roles)}`)
+            .setTimestamp();
 
+        if (user.banner)
+            embeduserinfo.setImage(user.banner);
 
-            return interaction.followUp({embeds:[embeduserinfo]})
-          }
-          else{           
-
-            let userflags = [];
-            if(member.user.flags === null){
-                userflags = [];
-            }
-            else{
-                userflags = member.user.flags.toArray();
-            }
-            
-    
-    
-            const devices = member.presence?.clientStatus  || {};
-
-            const entries = Object.entries(devices)
-                .map((value,index) => `${index + 1}) ${value[0][0].toUpperCase()}${value[0].slice(1)}`)
-                .join("\n");
-            const embeduserinfo = new MessageEmbed()
-                .setThumbnail(member.user.displayAvatarURL({dynamic: true, size:512}))
-                .setAuthor("Information about: " + member.user.username + "#" + member.user.discriminator, member.user.displayAvatarURL({dynamic: true}))
-                .setColor("RANDOM")
-                .addField('**Username:**', `\`${member.user.username}#${member.user.discriminator}\``,true)
-                .addField('**ID:**',`\`${member.id}\``,true)
-                .addField('**Avatar:**',`[\`Link to avatar\`](${member.user.displayAvatarURL({dynamic: true})})`,true)
-                .addField('**Registered Date:**',`\`${moment(member.user.createdTimestamp).format('LL')} ${moment(member.user.createdTimestamp).format('LT')}, ${moment(member.user.createdTimestamp).fromNow()} \``, true)
-                .addField('**Date Joined Server:**',`\`${moment(member.joinedAt).format('LL LTS')}\``,true)
-                .addField('**Flags:**',`\`${userflags.length ? userflags.map(flag => flags[flag]).join(', ') : 'None'}\``, true)
-                .addField('**Status:**',`\`${status[member.presence] ? status[member.presence.status] : 'Offline'}\``,true)
-                .addField('Devices Currently Using: ',`${Object.entries(devices).length}`)
-                .addField('Currently On Device(s)', `\`${Object.entries(devices).length > 0 ? entries : 'None'}\``)
-                .addField('**Game**:',`\`${(member.presence !== null) ? (member.presence.game) : 'Not Playing A Game'}\``,true)
-                .addField('**Highest Role:**',`${member.roles.highest.id === interaction.guild.id ? 'None' : member.roles.highest}`,true)
-                .addField(`\`${roles.length}\` **Roles:**`,`${getRoles(roles)}`)
-                .setColor("RANDOM")
-                .setTimestamp()
-    
-    
-                return interaction.followUp({embeds:[embeduserinfo]})
-
-
-
-          }
-
-
-    
+        await interaction.reply({embeds:[embeduserinfo]});
     }
 }
