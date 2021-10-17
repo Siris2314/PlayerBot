@@ -450,8 +450,7 @@ module.exports = {
 				
 				const activeGame = activeGames.get(interaction.user.id);
 				activeGame.sokobanBoard.movePlayer(0, Vector2.left);
-				await activeGame.updateVisuals();
-				await interaction.update(activeGame.currentMessageContent);
+				await activeGame.updateVisuals(interaction);
 			}
 		},
 		{
@@ -469,8 +468,7 @@ module.exports = {
 				const activeGame = activeGames.get(interaction.user.id);
 				// We use down to represent up since the array is constructed top to bottom
 				activeGame.sokobanBoard.movePlayer(0, Vector2.down);
-				await activeGame.updateVisuals();
-				await interaction.update(activeGame.currentMessageContent);
+				await activeGame.updateVisuals(interaction);
 			},
 		}, 
 		{
@@ -488,8 +486,7 @@ module.exports = {
 				const activeGame = activeGames.get(interaction.user.id);
 				// We use up to represent down since the array is constructed top to bottom
 				activeGame.sokobanBoard.movePlayer(0, Vector2.up);
-				await activeGame.updateVisuals();
-				await interaction.update(activeGame.currentMessageContent);
+				await activeGame.updateVisuals(interaction);
 			}
 		}, 
 		{ 
@@ -506,8 +503,7 @@ module.exports = {
 				
 				const activeGame = activeGames.get(interaction.user.id);
 				activeGame.sokobanBoard.movePlayer(0, Vector2.right);
-				await activeGame.updateVisuals();
-				await interaction.update(activeGame.currentMessageContent);
+				await activeGame.updateVisuals(interaction);
 			}
 		},
 		{
@@ -524,8 +520,7 @@ module.exports = {
 				
 				const activeGame = activeGames.get(interaction.user.id);
 				activeGame.sokobanBoard.loadFromText(activeGame.level.data);
-				await activeGame.updateVisuals();
-				await interaction.update(activeGame.currentMessageContent);
+				await activeGame.updateVisuals(interaction);
 			}
 		},
 		{
@@ -580,8 +575,7 @@ module.exports = {
 				activeGame.level = levels[interaction.values[0]];
 				activeGame.sokobanBoard.loadFromText(activeGame.level.data);
 				
-				await activeGame.updateVisuals();
-				await interaction.update(activeGame.currentMessageContent);
+				await activeGame.updateVisuals(interaction);
 			} 
 		}],
 	async execute(interaction) {
@@ -613,12 +607,12 @@ module.exports = {
 			message: null,
 			currentMessageContent: null,
 			sokobanBoard: new SokobanBoard(),
-			async updateVisuals() {
+			async updateVisuals(visualInteraction) {
 				if (activeGames.get(interaction.user.id).sokobanBoard.won)
 					// Don't update the visuals if we won
 					return;
 				
-				await this.setMessageContent({ 
+				const visualContent = { 
 					embeds: [
 						sokobanEmbed()
 							.setDescription(this.sokobanBoard.generateVisuals())
@@ -629,7 +623,12 @@ module.exports = {
 							)
 						],
 					components: sokobanGameplayRows(),
-				});
+				}
+
+				if (typeof visualInteraction !== 'undefined')
+					await visualInteraction.update(visualContent);
+				else
+					await this.setMessageContent(visualContent);
 			},
 			async onWin() {
 				// Remove button rows
