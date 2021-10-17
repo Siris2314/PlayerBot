@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { defaultEmbed } = require('../constants');
+const { defaultEmbed, fillerButton } = require('../constants');
 const { MessageActionRow, MessageButton, MessageEmbed, Message, MessageSelectMenu } = require('discord.js');
 const { Collection } = require('discord.js');
 const { EventEmitter } = require('events');
@@ -34,16 +34,25 @@ function sokobanGameplayRows() {
 	return [
 		new MessageActionRow()
 			.addComponents(
-				module.exports.components[0].data,
+				fillerButton(0),
 				module.exports.components[1].data,
-				module.exports.components[2].data,
-				module.exports.components[3].data,
+				fillerButton(1),
+				module.exports.components[4].data,
 			),
 		new MessageActionRow()
 			.addComponents(
-				module.exports.components[4].data,
+				module.exports.components[0].data,
+				fillerButton(2),
+				module.exports.components[3].data,
 				module.exports.components[5].data,
-			)
+			),
+		new MessageActionRow()
+			.addComponents(
+				fillerButton(3),
+				module.exports.components[2].data,
+				fillerButton(4),
+				fillerButton(5),
+			),
 	]
 }
 
