@@ -104,6 +104,10 @@ class Lobby {
 		}
 	}
 
+	get isSocialLobby() {
+		return typeof this.successfulCallback === 'undefined';
+	}
+
 	async collectButtonInput(interaction) {
 		if (interaction.customId === 'join-lobby') {
 			if (typeof playerToLobby.get(interaction.user.id) === 'undefined') {
@@ -114,6 +118,8 @@ class Lobby {
 					],
 					ephemeral: true,
 				})
+				if (!this.isSocialLobby && this.players.length == this.maxPlayers)
+					this.collector.stop();
 			} else {
 				await replyAlreadyInLobby(interaction);
 			}
@@ -122,7 +128,7 @@ class Lobby {
 				this.removePlayer(interaction.user);
 				await interaction.reply({
 					embeds: [ defaultEmbed('SUCESSS')
-						.setDescription(`You have been removed from the [lobby](${this.message.url}).}`)
+						.setDescription(`You have been removed from the [lobby](${this.message.url}).`)
 					],
 					ephemeral: true,
 				})
@@ -140,7 +146,7 @@ class Lobby {
 	finishLobby() {
 		this.durationTimer = 0;
 		
-		if (this.players.length >= this.minPlayers && typeof this.successfulCallback !== 'undefined')
+		if (this.players.length >= this.minPlayers && !this.isSocialLobby)
 			this.successfulCallback(this.players)
 
 		for (const i in this.players)
