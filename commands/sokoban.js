@@ -10,11 +10,11 @@ const activeGames = new Collection();
 const prefix = 'sokoban-';
 
 const BlockEnum = {
-	AIR: 0,
-	PLAYER: 1,
-	BOX: 2,
-	BOXGOAL: 3,
-	WALL: 4,
+	AIR: 		0x00001,
+	PLAYER: 	0x00010,
+	BOX: 		0x00100,
+	BOXGOAL: 	0x01000,
+	WALL: 		0x10000,
 }
 
 const defaultBlockEnum2Visual = {
@@ -23,6 +23,7 @@ const defaultBlockEnum2Visual = {
 	[BlockEnum.BOX]: '📦',
 	[BlockEnum.BOXGOAL]: '❎',
 	[BlockEnum.WALL]: '⬜',
+	[BlockEnum.BOXGOAL | BlockEnum.BOX]: '🟩',
 }
 
 function sokobanEmbed() {
@@ -222,7 +223,9 @@ class SimulationGrid {
 			this.move(steps[idx].from, steps[idx].to);
 	}
 	
-	tryPushGetMoveSteps(position, direction, steps) {
+	tryPushGetMoveSteps(position, direction, steps, pushLimit = 1) {
+		if (pushLimit === 0)
+			return false;
 		const futurePos = position.add(direction);
 		if (!this.bounds(position) || !this.bounds(futurePos) || this.get(position) !== BlockEnum.BOX)
 			return false;
@@ -237,7 +240,7 @@ class SimulationGrid {
 				});
 				return true;
 			case BlockEnum.BOX:
-				if (this.tryPushGetMoveSteps(futurePos, direction, steps)) {
+				if (this.tryPushGetMoveSteps(futurePos, direction, steps, pushLimit - 1)) {
 					steps.push({
 						from: position,
 						to: futurePos,
@@ -282,6 +285,7 @@ class SokobanBoard {
 		this.moveCount = 0;
 		this.stopAfterWin = true;
 		this.won = false;
+		this.pushLimit = 1;
 	}
 
 	get size() {
@@ -297,7 +301,10 @@ class SokobanBoard {
 			for (let x = 0; x < this.frontGrid.size.x; x++) {
 				const frontBlock = this.frontGrid.get(new Vector2(x, y));
 				const backBlock = this.backGrid.get(new Vector2(x, y));
-				str += (frontBlock !== BlockEnum.AIR) ? blockEnum2Visual[frontBlock] : blockEnum2Visual[backBlock];
+				let visual = blockEnum2Visual[frontBlock | backBlock];
+				if (typeof visual === 'undefined')
+					visual = (frontBlock !== BlockEnum.AIR) ? blockEnum2Visual[frontBlock] : blockEnum2Visual[backBlock];
+				str += visual;
 			}
 			if (y < this.frontGrid.size.y - 1)
 				str += '\n';
@@ -389,12 +396,11 @@ class SokobanBoard {
 					break
 				case '_':
 				case ' ':
-				case '⬛':
 					frontRow.push(BlockEnum.AIR);
 					backRow.push(BlockEnum.AIR);
 					break;
 				case 'P':
-				case '😳':
+				case '@':
 					this.players.push({
 						id: this.players.length,
 						position: new Vector2(x, y),
@@ -403,12 +409,12 @@ class SokobanBoard {
 					backRow.push(BlockEnum.AIR);
 					break;
 				case 'B':
-				case '📦':
+				case '$':
 					frontRow.push(BlockEnum.BOX);
 					backRow.push(BlockEnum.AIR);
 					break;
 				case 'G':
-				case '❎':
+				case '.':
 					frontRow.push(BlockEnum.AIR);
 					backRow.push(BlockEnum.BOXGOAL);
 					this.boxGoals.push({
@@ -417,9 +423,17 @@ class SokobanBoard {
 					});
 					break;
 				case 'W':
-				case '⬜':
+				case '#':
 					frontRow.push(BlockEnum.WALL);
 					backRow.push(BlockEnum.AIR);
+					break;
+				case '*':
+					frontRow.push(BlockEnum.BOX);
+					backRow.push(BlockEnum.BOXGOAL);
+					this.boxGoals.push({
+						type: BlockEnum.BOXGOAL,
+						position: new Vector2(x, y),
+					});
 					break;
 			}
 			x++;
@@ -447,8 +461,7 @@ module.exports = {
 				
 				const activeGame = activeGames.get(interaction.user.id);
 				activeGame.sokobanBoard.movePlayer(0, Vector2.left);
-				await activeGame.updateVisuals();
-				await interaction.update(activeGame.currentMessageContent);
+				await activeGame.updateVisuals(interaction);
 			}
 		},
 		{
@@ -466,8 +479,7 @@ module.exports = {
 				const activeGame = activeGames.get(interaction.user.id);
 				// We use down to represent up since the array is constructed top to bottom
 				activeGame.sokobanBoard.movePlayer(0, Vector2.down);
-				await activeGame.updateVisuals();
-				await interaction.update(activeGame.currentMessageContent);
+				await activeGame.updateVisuals(interaction);
 			},
 		}, 
 		{
@@ -485,8 +497,7 @@ module.exports = {
 				const activeGame = activeGames.get(interaction.user.id);
 				// We use up to represent down since the array is constructed top to bottom
 				activeGame.sokobanBoard.movePlayer(0, Vector2.up);
-				await activeGame.updateVisuals();
-				await interaction.update(activeGame.currentMessageContent);
+				await activeGame.updateVisuals(interaction);
 			}
 		}, 
 		{ 
@@ -503,8 +514,7 @@ module.exports = {
 				
 				const activeGame = activeGames.get(interaction.user.id);
 				activeGame.sokobanBoard.movePlayer(0, Vector2.right);
-				await activeGame.updateVisuals();
-				await interaction.update(activeGame.currentMessageContent);
+				await activeGame.updateVisuals(interaction);
 			}
 		},
 		{
@@ -521,8 +531,7 @@ module.exports = {
 				
 				const activeGame = activeGames.get(interaction.user.id);
 				activeGame.sokobanBoard.loadFromText(activeGame.level.data);
-				await activeGame.updateVisuals();
-				await interaction.update(activeGame.currentMessageContent);
+				await activeGame.updateVisuals(interaction);
 			}
 		},
 		{
@@ -577,8 +586,7 @@ module.exports = {
 				activeGame.level = levels[interaction.values[0]];
 				activeGame.sokobanBoard.loadFromText(activeGame.level.data);
 				
-				await activeGame.updateVisuals();
-				await interaction.update(activeGame.currentMessageContent);
+				await activeGame.updateVisuals(interaction);
 			} 
 		}],
 	async execute(interaction) {
@@ -610,12 +618,12 @@ module.exports = {
 			message: null,
 			currentMessageContent: null,
 			sokobanBoard: new SokobanBoard(),
-			async updateVisuals() {
+			async updateVisuals(visualInteraction) {
 				if (activeGames.get(interaction.user.id).sokobanBoard.won)
 					// Don't update the visuals if we won
 					return;
 				
-				await this.setMessageContent({ 
+				const visualContent = { 
 					embeds: [
 						sokobanEmbed()
 							.setDescription(this.sokobanBoard.generateVisuals())
@@ -626,7 +634,12 @@ module.exports = {
 							)
 						],
 					components: sokobanGameplayRows(),
-				});
+				}
+
+				if (typeof visualInteraction !== 'undefined')
+					await visualInteraction.update(visualContent);
+				else
+					await this.setMessageContent(visualContent);
 			},
 			async onWin() {
 				// Remove button rows
