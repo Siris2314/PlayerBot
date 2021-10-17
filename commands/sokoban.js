@@ -10,11 +10,11 @@ const activeGames = new Collection();
 const prefix = 'sokoban-';
 
 const BlockEnum = {
-	AIR: 0,
-	PLAYER: 1,
-	BOX: 2,
-	BOXGOAL: 3,
-	WALL: 4,
+	AIR: 		0x00001,
+	PLAYER: 	0x00010,
+	BOX: 		0x00100,
+	BOXGOAL: 	0x01000,
+	WALL: 		0x10000,
 }
 
 const defaultBlockEnum2Visual = {
@@ -23,6 +23,7 @@ const defaultBlockEnum2Visual = {
 	[BlockEnum.BOX]: '📦',
 	[BlockEnum.BOXGOAL]: '❎',
 	[BlockEnum.WALL]: '⬜',
+	[BlockEnum.BOXGOAL | BlockEnum.BOX]: '🟩',
 }
 
 function sokobanEmbed() {
@@ -300,7 +301,10 @@ class SokobanBoard {
 			for (let x = 0; x < this.frontGrid.size.x; x++) {
 				const frontBlock = this.frontGrid.get(new Vector2(x, y));
 				const backBlock = this.backGrid.get(new Vector2(x, y));
-				str += (frontBlock !== BlockEnum.AIR) ? blockEnum2Visual[frontBlock] : blockEnum2Visual[backBlock];
+				let visual = blockEnum2Visual[frontBlock | backBlock];
+				if (typeof visual === 'undefined')
+					visual = (frontBlock !== BlockEnum.AIR) ? blockEnum2Visual[frontBlock] : blockEnum2Visual[backBlock];
+				str += visual;
 			}
 			if (y < this.frontGrid.size.y - 1)
 				str += '\n';
@@ -392,12 +396,11 @@ class SokobanBoard {
 					break
 				case '_':
 				case ' ':
-				case '⬛':
 					frontRow.push(BlockEnum.AIR);
 					backRow.push(BlockEnum.AIR);
 					break;
 				case 'P':
-				case '😳':
+				case '@':
 					this.players.push({
 						id: this.players.length,
 						position: new Vector2(x, y),
@@ -406,12 +409,12 @@ class SokobanBoard {
 					backRow.push(BlockEnum.AIR);
 					break;
 				case 'B':
-				case '📦':
+				case '$':
 					frontRow.push(BlockEnum.BOX);
 					backRow.push(BlockEnum.AIR);
 					break;
 				case 'G':
-				case '❎':
+				case '.':
 					frontRow.push(BlockEnum.AIR);
 					backRow.push(BlockEnum.BOXGOAL);
 					this.boxGoals.push({
@@ -420,9 +423,17 @@ class SokobanBoard {
 					});
 					break;
 				case 'W':
-				case '⬜':
+				case '#':
 					frontRow.push(BlockEnum.WALL);
 					backRow.push(BlockEnum.AIR);
+					break;
+				case '*':
+					frontRow.push(BlockEnum.BOX);
+					backRow.push(BlockEnum.BOXGOAL);
+					this.boxGoals.push({
+						type: BlockEnum.BOXGOAL,
+						position: new Vector2(x, y),
+					});
 					break;
 			}
 			x++;
