@@ -14,5 +14,12 @@ module.exports = {
 			}
 		}
 		return embed;
+	},
+	fillerButton(number = 0) {
+		return new MessageButton()
+			.setStyle('SECONDARY')
+			.setLabel(' ')
+			.setCustomId(`filler-${number}`)
+			.setDisabled(true);
 	}
 }
