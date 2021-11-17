@@ -1,12 +1,11 @@
 const {
-    MessageEmbed,
-    MessageActionRow,
-    MessageButton
+	MessageEmbed,
+	MessageActionRow,
+	MessageButton
 } = require("discord.js")
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { defaultEmbed } = require('../constants');
 const LobbyMaker = require('../lobby-maker');
-const { channel } = require("diagnostics_channel");
 
 const activeGames = [];
 
@@ -140,12 +139,12 @@ class RockPaperScissorGame {
 		this.durationTimer = 0;
 
 		let result = "";
-		if (this.choices[0] == this.choices[1]) {
+		if (this.choices[0] === this.choices[1]) {
 			result = "Tie!"
 		} else {
 			let winnerIdx;
 			let loserIdx;
-			if (SuperiorToWeak[this.players[0]] === this.players[1]) {
+			if (SuperiorToWeak[this.choices[0]] === this.choices[1]) {
 				winnerIdx = 0;
 				loserIdx = 1;
 			} else {
