@@ -58,11 +58,28 @@ client.on('interactionCreate', async interaction => {
 });
 
 // Setup commands
+function getFiles(path) {
+	var files = [];
+	getFilesHelper(path, files);
+	return files;
+}
+
+function getFilesHelper(path, files) {
+    fs.readdirSync(path).forEach(function(file){
+        var subpath = path + '/' + file;
+        if(fs.lstatSync(subpath).isDirectory()){
+            getFilesHelper(subpath, files);
+        } else {
+            files.push(path + '/' + file);
+        }
+    });     
+}
+
 client.commands = new Collection();
-const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+const commandFiles = getFiles('./commands').filter(file => file.endsWith('-command.js'));
 
 for (const file of commandFiles) {
-	const command = require(`./commands/${file}`);
+	const command = require(file);
 	// Set a new item in the Collection
 	// With the key as the command name and the value as the exported module
 	client.commands.set(command.data.name, command);
